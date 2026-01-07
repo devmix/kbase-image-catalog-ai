@@ -1,0 +1,240 @@
+/* Global styles for KBase Image Catalog */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Header and navigation */
+h1 {
+    color: #212529;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+}
+
+.catalog-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.catalog-nav a {
+    padding: 8px 16px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #007bff;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.catalog-nav a:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Controls and search */
+.controls {
+    margin-bottom: 25px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.controls input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.controls select {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 150px;
+}
+
+.controls button {
+    padding: 12px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+    min-width: 120px;
+}
+
+.controls button:hover {
+    background-color: #0056b3;
+}
+
+/* Reindex button */
+.reindex-button {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 20px;
+    margin-left: 10px;
+}
+
+.reindex-button:hover {
+    background-color: #218838;
+}
+
+/* Image grid layout */
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Image card styling */
+.image-card {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.image-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.image-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    cursor: pointer;
+}
+
+.image-info {
+    padding: 15px;
+}
+
+.image-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #212529;
+}
+
+.image-description {
+    font-size: 14px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+/* Catalog grid layout */
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Catalog card styling */
+.catalog-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #e9ecef;
+}
+
+.catalog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.catalog-card h3 {
+    margin-top: 0;
+    color: #007bff;
+}
+
+/* Full-width content on large screens */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 100%;
+        padding: 0 20px;
+    }
+    
+    .controls {
+        padding: 1rem;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .image-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+    }
+    
+    .catalog-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .controls input[type="text"] {
+        min-width: 100%;
+    }
+    
+    .catalog-nav {
+        flex-direction: column;
+    }
+    
+    .catalog-nav a {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Indicator styling */
+.htmx-indicator {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.htmx-indicator::after {
+    content: "...";
+    animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: "."; }
+    40% { content: ".."; }
+    60%, 100% { content: "..."; }
+}

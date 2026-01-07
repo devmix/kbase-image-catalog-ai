@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  kbase-image-catalog:
+    build: .
+    container_name: kbase-catalog
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./archive:/kbic/archive
+      - ./config.yaml:/kbic/config.yaml
+    restart: unless-stopped

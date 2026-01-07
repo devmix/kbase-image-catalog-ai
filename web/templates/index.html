@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KBase Image Catalog</title>
+    <script src="/static/htmx.min.js"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="container">
+    <h1>KBase Image Catalog</h1>
+
+    <div class="controls">
+        <input type="text" id="searchQuery" placeholder="Search catalogs..."
+               name="q"
+               hx-get="/api/search"
+               hx-trigger="keyup changed delay:500ms"
+               hx-target="#catalogList"
+               hx-indicator="#spinner"
+               hx-include="#searchInput">
+        <span id="spinner" class="htmx-indicator">Loading...</span>
+
+        <label for="catalogSort">Sort by:</label>
+        <select id="catalogSort"
+                name="sort"
+                hx-get="/"
+                hx-trigger="change"
+                hx-target="#catalogList"
+                hx-include="[name='q']">
+            <option value="name" selected>Name</option>
+            <option value="imageCount">Image Count</option>
+            <option value="lastUpdate">Last Update</option>
+        </select>
+
+        <label for="sortOrder">Order:</label>
+        <select id="sortOrder"
+                name="order"
+                hx-get="/"
+                hx-trigger="change"
+                hx-target="#catalogList"
+                hx-include="[name='sort']">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+        </select>
+
+        <button hx-get="/"
+                hx-target="#catalogList"
+                hx-include="[name='sort'], [name='q']">
+            Refresh
+        </button>
+
+        <button class="reindex-button"
+                hx-post="/api/reindex"
+                hx-target="#reindexStatus"
+                hx-swap="innerHTML">
+            Reindex All Catalogs
+        </button>
+        <span id="reindexStatus"></span>
+    </div>
+
+    <div id="catalogList">{{.CatalogList}}</div>
+</div>
+</body>
+</html>

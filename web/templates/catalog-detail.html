@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.CatalogName}} - KBase Image Catalog</title>
+    <script src="/static/htmx.min.js"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/viewer.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="container">
+    <h1>{{.CatalogName}}</h1>
+
+    <div class="controls">
+        <div class="catalog-nav">
+            <a href="/">← Back to Catalogs</a>
+        </div>
+
+        <input type="text" id="imageSearchQuery" placeholder="Search images in catalog..."
+               name="q"
+               hx-get="/api/catalog-search"
+               hx-trigger="keyup changed delay:500ms"
+               hx-target="#catalogImages"
+               hx-indicator="#imageSpinner"
+               hx-include="[name='catalog'], #imageSearchInput">
+        <input type="hidden" name="catalog" value="{{.CatalogName}}">
+        <span id="imageSpinner" class="htmx-indicator">Loading...</span>
+
+        <label for="imageSort">Sort images by:</label>
+        <select id="imageSort"
+                name="sort"
+                hx-get="/catalog/{{.CatalogName}}"
+                hx-trigger="change"
+                hx-target="#catalogImages"
+                hx-include="[name='order']">
+            <option value="filename" selected>Filename</option>
+            <option value="shortName">Short Name</option>
+            <option value="description">Description</option>
+        </select>
+
+        <label for="sortOrder">Order:</label>
+        <select id="sortOrder"
+                name="order"
+                hx-get="/catalog/{{.CatalogName}}"
+                hx-trigger="change"
+                hx-target="#catalogImages"
+                hx-include="[name='sort']">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+        </select>
+
+        <button hx-get="/catalog/{{.CatalogName}}"
+                hx-target="#catalogImages"
+                hx-include="[name='sort'], [name='order']">
+            Refresh
+        </button>
+
+        <button class="reindex-button"
+                hx-post="/api/reindex"
+                hx-vals='{"catalog": "{{.CatalogName}}"}'
+                hx-target="#reindexStatus"
+                hx-swap="innerHTML">
+            Reindex Catalog
+        </button>
+        <span id="reindexStatus"></span>
+    </div>
+
+    <div id="catalogImages">{{.CatalogImages}}</div>
+</div>
+
+<script src="/static/viewer.min.js"></script>
+<script>
+    function initViewer() {
+        if (window.viewerInstance) {
+            window.viewerInstance.destroy();
+        }
+        const container = document.querySelector('.image-grid');
+        if (container) {
+            window.viewerInstance = new Viewer(container);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initViewer);
+    document.body.addEventListener('htmx:afterSwap', initViewer);
+</script>
+</body>
+</html>

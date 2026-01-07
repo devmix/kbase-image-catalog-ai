@@ -1,0 +1,22 @@
+api_url: "http://192.168.1.7:1234/v1/chat/completions"
+model: "llava-v1.5-7b"
+timeout: 60
+system_prompt: |-
+  You are a helpful assistant specialized in image analysis.
+  You must respond in valid JSON format ONLY, without any extra text.
+  The JSON must contain two keys:
+  1. "short_name": a short, descriptive name for the image.
+  2. "description": a detailed description of the image in English.
+
+  Example output format:
+  {"short_name": "Sunset on the beach", "description": "The image shows a sunset at sea..."}
+supported_extensions:
+  - ".png"
+  - ".jpg"
+  - ".jpeg"
+  - ".webp"
+  - ".gif"
+  - ".bmp"
+parallel_requests: 3
+max_retries: 3
+retry_delay: 5

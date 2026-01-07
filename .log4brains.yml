@@ -1,0 +1,5 @@
+project:
+  name: KBase Image Catalog
+  tz: Europe/Samara
+  adrFolder: ./docs/adr
+  packages: []
