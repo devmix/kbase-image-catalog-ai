@@ -142,6 +142,21 @@ func TestCatalogProcessor_NewCatalogProcessor(t *testing.T) {
 	assert.Equal(t, "/test/archive", cp.archiveDir)
 }
 
+func TestCatalogProcessor_ShouldExclude(t *testing.T) {
+	t.Run("Should handle empty exclude filter", func(t *testing.T) {
+		config := &config.Config{
+			SupportedExtensions: []string{".jpg", ".png"},
+			ExcludeFilter:       []string{},
+		}
+
+		cp := NewCatalogProcessor(config, "/test/archive")
+
+		// With no filters, nothing should be excluded
+		assert.False(t, cp.ShouldExclude("/any/path/temp"))
+		assert.False(t, cp.ShouldExclude("/any/path/.git"))
+	})
+}
+
 func TestFileScanner_FindImagesToProcess(t *testing.T) {
 	// Create a temporary directory structure for testing
 	tempDir := t.TempDir()

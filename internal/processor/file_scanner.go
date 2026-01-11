@@ -9,15 +9,28 @@ import (
 	"strings"
 
 	"kbase-catalog/internal/config"
+
+	"github.com/moby/patternmatcher"
 )
 
 type FileScanner struct {
-	config *config.Config
+	config  *config.Config
+	exclude *patternmatcher.PatternMatcher
 }
 
 func NewFileScanner(cfg *config.Config) *FileScanner {
+	var matcher *patternmatcher.PatternMatcher = nil
+	if len(cfg.ExcludeFilter) != 0 {
+		m, err := patternmatcher.New(cfg.ExcludeFilter)
+		if err != nil {
+			panic(err)
+		}
+		matcher = m
+	}
+
 	return &FileScanner{
-		config: cfg,
+		config:  cfg,
+		exclude: matcher,
 	}
 }
 
@@ -68,6 +81,11 @@ func (fs *FileScanner) FindImagesToProcess(dirPath string) ([]string, error) {
 		}
 	}
 
+	// Apply exclusion patterns
+	if len(fs.config.ExcludeFilter) > 0 {
+		filteredImages = fs.FilterExcludedFiles(filteredImages)
+	}
+
 	return filteredImages, nil
 }
 
@@ -88,4 +106,22 @@ func (fs *FileScanner) LoadExistingData(indexJsonPath string) (map[string]interf
 	}
 
 	return data, nil
+}
+
+func (fs *FileScanner) ShouldExclude(file string) bool {
+	if fs.exclude == nil {
+		return false // When no exclude, don't exclude anything
+	}
+	matched, _ := fs.exclude.MatchesOrParentMatches(file)
+	return matched
+}
+
+func (fs *FileScanner) FilterExcludedFiles(files []string) []string {
+	var result []string
+	for _, file := range files {
+		if !fs.ShouldExclude(file) {
+			result = append(result, file)
+		}
+	}
+	return result
 }

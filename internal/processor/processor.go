@@ -57,6 +57,14 @@ func (cp *CatalogProcessor) ProcessCatalog(ctx context.Context, catalogDir strin
 			return nil
 		}
 
+		// Skip directories that match exclusion patterns
+		if info.IsDir() && len(cp.config.ExcludeFilter) > 0 {
+			relPath, err := filepath.Rel(catalogDir, path)
+			if err == nil && relPath != "." && cp.fs.ShouldExclude(path) {
+				return filepath.SkipDir
+			}
+		}
+
 		if info.IsDir() {
 			fmt.Printf("\n--> Processing directory: %s\n", strings.TrimPrefix(path, catalogDir+"/"))
 
@@ -84,4 +92,8 @@ func (cp *CatalogProcessor) ProcessCatalog(ctx context.Context, catalogDir strin
 
 func (cp *CatalogProcessor) TestSingleImage(ctx context.Context, imagePath string) (*llm.LLMResponse, error) {
 	return cp.ip.TestSingleImage(ctx, imagePath)
+}
+
+func (cp *CatalogProcessor) ShouldExclude(path string) bool {
+	return cp.fs.ShouldExclude(path)
 }

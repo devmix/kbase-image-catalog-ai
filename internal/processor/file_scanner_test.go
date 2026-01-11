@@ -298,6 +298,71 @@ func TestLoadExistingData_InvalidJsonFile(t *testing.T) {
 	assert.Empty(t, result)
 }
 
+func TestFileScanner_FilterExcludedFiles_Simple(t *testing.T) {
+	// Create a temporary directory for testing
+	tempDir, err := os.MkdirTemp("", "test_filter_simple")
+	assert.NoError(t, err)
+	defer cleanupFileScannerTestDir(t, tempDir)
+
+	// Create test files including some that should be excluded
+	img1Path := filepath.Join(tempDir, "test.jpg")
+	tmpPath := filepath.Join(tempDir, "temp_file.tmp")
+	bakPath := filepath.Join(tempDir, "backup.bak")
+
+	// Create the files
+	os.WriteFile(img1Path, []byte("fake image content"), 0644)
+	os.WriteFile(tmpPath, []byte("temp file content"), 0644)
+	os.WriteFile(bakPath, []byte("backup file content"), 0644)
+
+	cfg := &config.Config{
+		SupportedExtensions: []string{".jpg", ".png"},
+		ExcludeFilter:       []string{"**/*.tmp", "**/*.bak"},
+	}
+	fs := NewFileScanner(cfg)
+
+	// Test that we can create a FileScanner with filters
+	assert.NotNil(t, fs)
+	assert.Equal(t, cfg, fs.config)
+
+	files := []string{img1Path, tmpPath, bakPath}
+	filtered := fs.FilterExcludedFiles(files)
+
+	assert.NotNil(t, filtered)
+	assert.Len(t, filtered, 1)
+	assert.Contains(t, filtered, img1Path)
+}
+
+func TestFileScanner_FilterWithEmptyConfig(t *testing.T) {
+	// Create a temporary directory for testing
+	tempDir, err := os.MkdirTemp("", "test_filter_empty")
+	assert.NoError(t, err)
+	defer cleanupFileScannerTestDir(t, tempDir)
+
+	// Create test files
+	img1Path := filepath.Join(tempDir, "test.jpg")
+	tmpPath := filepath.Join(tempDir, "temp_file.tmp")
+
+	// Create the files
+	os.WriteFile(img1Path, []byte("fake image content"), 0644)
+	os.WriteFile(tmpPath, []byte("temp file content"), 0644)
+
+	cfg := &config.Config{
+		SupportedExtensions: []string{".jpg", ".png"},
+		ExcludeFilter:       []string{}, // Empty exclude
+	}
+	fs := NewFileScanner(cfg)
+
+	// Should not panic and should create a valid scanner
+	assert.NotNil(t, fs)
+
+	// Test that it doesn't crash with empty exclude
+	files := []string{img1Path, tmpPath}
+	filtered := fs.FilterExcludedFiles(files)
+
+	// With no filters, all files should be returned
+	assert.Len(t, filtered, 2)
+}
+
 // Test helpers to create test directories and files
 func cleanupFileScannerTestDir(t *testing.T, dirPath string) {
 	err := os.RemoveAll(dirPath)

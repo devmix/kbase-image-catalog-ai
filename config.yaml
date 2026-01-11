@@ -17,6 +17,12 @@ supported_extensions:
   - ".webp"
   - ".gif"
   - ".bmp"
+exclude_filter:
+  - "*/temp/*"
+  - "*/tmp/*"
+  - "*.tmp"
+  - "*.bak"
+  - ".git"
 parallel_requests: 3
 max_retries: 3
 retry_delay: 5

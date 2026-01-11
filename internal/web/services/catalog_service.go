@@ -231,6 +231,15 @@ func (cs *CatalogService) getCatalogInfo(catalogPath string) (int, string, error
 
 		for _, entry := range entries {
 			if !entry.IsDir() {
+
+				// Skip files that match exclusion patterns
+				if len(cs.Config.ExcludeFilter) > 0 {
+					filePath := filepath.Join(catalogPath, entry.Name())
+					if cs.Processor.ShouldExclude(filePath) {
+						continue
+					}
+				}
+
 				ext := strings.ToLower(filepath.Ext(entry.Name()))
 				// Check if it's a supported image extension
 				for _, supportedExt := range cs.Config.SupportedExtensions {

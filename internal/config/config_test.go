@@ -23,6 +23,12 @@ system_prompt: |
 supported_extensions:
   - ".png"
   - ".jpg"
+exclude_filter:
+  - "*/temp/*"
+  - "*/tmp/*"
+  - "*.tmp"
+  - "*.bak"
+  - ".git"
 parallel_requests: 3
 max_retries: 3
 retry_delay: 5
@@ -40,6 +46,7 @@ retry_delay: 5
 	assert.Equal(t, 3, config.ParallelRequests)
 	assert.Equal(t, 3, config.MaxRetries)
 	assert.Equal(t, 5, config.RetryDelay)
+	assert.Equal(t, []string{"*/temp/*", "*/tmp/*", "*.tmp", "*.bak", ".git"}, config.ExcludeFilter)
 }
 
 func TestLoadConfigFileNotFound(t *testing.T) {
