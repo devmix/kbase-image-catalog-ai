@@ -157,6 +157,21 @@ func TestCatalogProcessor_ShouldExclude(t *testing.T) {
 	})
 }
 
+func TestCatalogProcessor_RebuildRootIndex(t *testing.T) {
+	t.Run("Should handle empty directory", func(t *testing.T) {
+		config := config.GetDefaultConfig()
+		cp := NewCatalogProcessor(config, "/test/archive")
+
+		// Create a temporary directory for testing
+		tempDir := t.TempDir()
+
+		// Test with an empty directory - should not error
+		ctx := context.Background()
+		err := cp.RebuildRootIndex(ctx, tempDir)
+		assert.NoError(t, err)
+	})
+}
+
 func TestFileScanner_FindImagesToProcess(t *testing.T) {
 	// Create a temporary directory structure for testing
 	tempDir := t.TempDir()

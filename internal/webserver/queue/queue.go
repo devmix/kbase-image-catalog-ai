@@ -134,7 +134,7 @@ func (q *TaskQueue) processTask(task *ReindexTask) {
 
 	log.Printf("Processing reindex task for catalog %s (source: %s)", task.CatalogName, task.Source)
 
-	err := q.processor.ProcessCatalog(q.ctx, catalogPath)
+	err := q.processor.ProcessImagesCatalog(q.ctx, catalogPath)
 	if err != nil {
 		// TODO retry or mark as failed
 		// Log error but don't stop processing other tasks

@@ -73,36 +73,25 @@ func (ig *IndexGenerator) GenerateCatalogIndexAsMarkdown(mdPath string, data map
 	return nil
 }
 
-func (ig *IndexGenerator) GenerateRootIndexAsMarkdown(rootPath string, subdirs []string) {
+func (ig *IndexGenerator) GenerateGlobalMarkdownIndex(rootPath string, catalogData map[string]interface{}) error {
 	rootMdPath := filepath.Join(rootPath, "index.md")
 
 	lines := []string{}
 	lines = append(lines, "# Directory List")
-
-	if err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			dirName := filepath.Base(path)
-			mdPath := filepath.Join(dirName, "index.md")
-			lines = append(lines, fmt.Sprintf("- [%s](%s)", dirName, mdPath))
-		}
-
-		return nil
-	}); err != nil {
-		fmt.Printf("Error listing catalog root: %v\n", err)
+	for k, _ := range catalogData {
+		lines = append(lines, fmt.Sprintf("- [%s](%s)", k, k))
 	}
 
 	content := strings.Join(lines, "\n")
 	if err := os.WriteFile(rootMdPath, []byte(content), 0644); err != nil {
-		fmt.Printf("Error writing root index.md: %v\n", err)
+		return fmt.Errorf("Error writing root index.md: %v\n", err)
 	}
+
+	return nil
 }
 
-// GenerateGlobalIndex creates a global index of all catalogs with their metadata
-func (ig *IndexGenerator) GenerateGlobalIndex(rootPath string, catalogData map[string]interface{}) error {
+// GenerateGlobalJsonIndex creates a global index of all catalogs with their metadata
+func (ig *IndexGenerator) GenerateGlobalJsonIndex(rootPath string, catalogData map[string]interface{}) error {
 	globalIndexPath := filepath.Join(rootPath, "index.json")
 
 	content, err := json.MarshalIndent(catalogData, "", "  ")

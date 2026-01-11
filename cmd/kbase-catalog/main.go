@@ -48,10 +48,11 @@ func main() {
 		fmt.Println("KBase Image Catalog")
 		fmt.Println("Usage: kbase-catalog [command]")
 		fmt.Println("Commands:")
-		fmt.Println("  process <root_dir> - Process the catalog starting from root directory")
-		fmt.Println("  test <image_path>  - Test single image processing")
-		fmt.Println("  version           - Show version information")
-		fmt.Println("  web               - Start web interface")
+		fmt.Println("  process    		 			- Process the catalog starting from root directory")
+		fmt.Println("  rebuild-index				- Rebuild the root index.json file")
+		fmt.Println("  test <image_path>  			- Test single image processing")
+		fmt.Println("  version           			- Show version information")
+		fmt.Println("  web               			- Start web interface")
 		return
 	}
 
@@ -60,9 +61,22 @@ func main() {
 	case "process":
 		fmt.Printf("Processing catalog in: %s\n", *archiveDir)
 
-		err = catalogProcessor.ProcessCatalog(ctx, *archiveDir)
+		err = catalogProcessor.ProcessCatalog(ctx)
 		if err != nil {
 			log.Fatalf("Failed to process catalog: %v", err)
+		}
+
+		err = catalogProcessor.RebuildRootIndex(ctx)
+		if err != nil {
+			log.Fatalf("Failed to rebuild root index: %v", err)
+		}
+
+	case "rebuild-index":
+		fmt.Printf("Rebuilding root index in: %s\n", *archiveDir)
+
+		err = catalogProcessor.RebuildRootIndex(ctx)
+		if err != nil {
+			log.Fatalf("Failed to rebuild root index: %v", err)
 		}
 
 	case "test":
