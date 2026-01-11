@@ -27,6 +27,9 @@ var (
 	qualityFlag   int
 	originDirFlag string
 
+	// Fix names flags
+	fixNamesDirectory string
+
 	rootCmd = &cobra.Command{
 		Use:   "kbase-catalog",
 		Short: "KBase Image Catalog tool",
@@ -195,6 +198,29 @@ var (
 		},
 	}
 
+	fixNamesCmd = &cobra.Command{
+		Use:   "fix-names",
+		Short: "Normalize directory names in a given folder",
+		Run: func(cmd *cobra.Command, args []string) {
+			_, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			// Load configuration
+			cfg, err := config.LoadConfig("")
+			if err != nil {
+				log.Fatalf("Failed to load configuration: %v", err)
+			}
+
+			// Create processor
+			catalogProcessor := processor.NewCatalogProcessor(cfg, archiveDirFlag)
+
+			err = catalogProcessor.FixCatalogNames()
+			if err != nil {
+				log.Fatalf("Failed to fix names: %v", err)
+			}
+		},
+	}
+
 	versionCmd = &cobra.Command{
 		Use:   "version",
 		Short: "Show version information",
@@ -220,11 +246,14 @@ func init() {
 	// rebuild index flags
 	rebuildIndexCmd.Flags().StringVarP(&archiveDirFlag, "archive-dir", "a", "archive", descriptionArchiveDir)
 
-	// Add commands
+	// fix names flags
+	fixNamesCmd.Flags().StringVarP(&archiveDirFlag, "archive-dir", "a", "archive", descriptionArchiveDir)
+
 	rootCmd.AddCommand(processCmd)
 	rootCmd.AddCommand(rebuildIndexCmd)
 	rootCmd.AddCommand(testCmd)
 	rootCmd.AddCommand(convertImagesCmd)
+	rootCmd.AddCommand(fixNamesCmd)
 	rootCmd.AddCommand(webCmd)
 	rootCmd.AddCommand(versionCmd)
 }

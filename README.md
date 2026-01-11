@@ -52,6 +52,7 @@ catalogs.
 - **📊 Comprehensive Metadata**: Structured JSON output with rich information
 - **🛡️ Production Ready**: Docker support, graceful shutdown, and comprehensive logging
 - **🖼️ Image Conversion**: Convert images to WebP format for optimized storage
+- **🔄 Catalog Name Normalization**: Normalize directory names by removing special characters and converting to proper case
 
 ### 🎯 Key Features
 
@@ -68,6 +69,7 @@ catalogs.
 - **Automatic Filtering** of supported image formats
 - **index.json Generation** for each catalog
 - **Root Index Creation** for the entire collection
+- **Catalog Name Normalization** - Normalize directory names by removing special characters and converting to proper case
 
 #### 🌐 Web Interface
 
@@ -201,10 +203,11 @@ kbase-catalog/
 The application follows a clean architecture pattern with clear separation of concerns:
 
 - **CLI Layer** (`cmd/`): Command-line interface with graceful shutdown handling
-- **Core Processing** (`internal/processor/`): Business logic for image analysis and catalog generation
+- **Core Processing** (`internal/processor/`): Business logic for image analysis, catalog generation, and name normalization
 - **AI Integration** (`internal/llm/`): Communication with LLM services
 - **Web Interface** (`internal/web/`): HTTP server with HTMX-powered frontend
 - **Configuration** (`internal/config/`): Centralized configuration management
+- **Image Conversion** (`internal/images/`): WebP conversion utilities and original file management
 
 ### Technology Stack
 
@@ -317,7 +320,32 @@ retry_delay: 5
 
 #### Command Line Interface
 
-```bash
+```shell
+A tool for managing image catalogs with LLM-powered processing and image conversion capabilities.
+
+Usage:
+  kbase-catalog [command]
+
+Available Commands:
+  completion     Generate the autocompletion script for the specified shell
+  convert-images Convert images to WebP format
+  fix-names      Normalize directory names in a given folder
+  help           Help about any command
+  process        Process the catalog starting from root directory
+  rebuild-index  Rebuild the root index.json file
+  test           Test single image processing
+  version        Show version information
+  web            Start web interface
+
+Flags:
+  -h, --help   help for kbase-catalog
+
+Use "kbase-catalog [command] --help" for more information about a command
+```
+
+Commands
+
+```shell
 # Process entire catalog
 go run cmd/kbase-catalog/main.go process /path/to/images
 
@@ -329,6 +357,9 @@ go run cmd/kbase-catalog/main.go test /path/to/image.jpg
 
 # Convert images to WebP format
 go run cmd/kbase-catalog/main.go convert-images
+
+# Normalize catalog directory names
+go run cmd/kbase-catalog/main.go fix-names
 
 # Start web interface
 go run cmd/kbase-catalog/main.go web
@@ -386,17 +417,17 @@ go build -o kbase-catalog cmd/kbase-catalog/main.go
 
 ### Configuration Parameters
 
-| Parameter              | Type     | Default                                    | Description                            |
-|------------------------|----------|--------------------------------------------|----------------------------------------|
-| `api_url`              | string   | -                                          | AI API endpoint URL                    |
-| `model`                | string   | -                                          | Model name for analysis                |
-| `timeout`              | int      | 60                                         | Request timeout in seconds             |
-| `parallel_requests`    | int      | 3                                          | Number of parallel requests            |
-| `max_retries`          | int      | 3                                          | Maximum retry attempts                 |
-| `retry_delay`          | int      | 5                                          | Delay between retries (seconds)        |
-| `supported_extensions` | []string | [.png, .jpg, .jpeg, .webp, .gif, .bmp]     | Supported file formats                 |
-| `convert_image_extensions` | []string | [.png, .tiff, .bmp, .gif, .jpg, .jpeg]  | Image extensions to convert to WebP |
-| `exclude_filter`       | []string | [*/temp/*, */tmp/*, *.tmp, *.bak, **/.git] | Exclude patterns for files/directories |
+| Parameter                  | Type     | Default                                    | Description                            |
+|----------------------------|----------|--------------------------------------------|----------------------------------------|
+| `api_url`                  | string   | -                                          | AI API endpoint URL                    |
+| `model`                    | string   | -                                          | Model name for analysis                |
+| `timeout`                  | int      | 60                                         | Request timeout in seconds             |
+| `parallel_requests`        | int      | 3                                          | Number of parallel requests            |
+| `max_retries`              | int      | 3                                          | Maximum retry attempts                 |
+| `retry_delay`              | int      | 5                                          | Delay between retries (seconds)        |
+| `supported_extensions`     | []string | [.png, .jpg, .jpeg, .webp, .gif, .bmp]     | Supported file formats                 |
+| `convert_image_extensions` | []string | [.png, .tiff, .bmp, .gif, .jpg, .jpeg]     | Image extensions to convert to WebP    |
+| `exclude_filter`           | []string | [*/temp/*, */tmp/*, *.tmp, *.bak, **/.git] | Exclude patterns for files/directories |
 
 ## 🧪 Testing and Development
 
@@ -750,6 +781,7 @@ curl -f http://localhost:1234/health || echo "AI service unavailable"
 - [ ] **Fine-tuned Models** - Custom models for specific domains (technical schemas, art, photos)
 - [ ] **Batch Processing** - Optimized processing for large batches
 - [ ] **Local Model Support** - Offline processing capabilities
+- [ ] **Catalog Name Normalizer** - Automatically normalize directory names by removing special characters and converting to proper case
 
 ### 📊 Version History
 

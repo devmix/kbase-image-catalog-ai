@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -242,4 +243,81 @@ func (cp *CatalogProcessor) ProcessCatalog(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// FixCatalogNames fix catalog names in the given path
+func (cp *CatalogProcessor) FixCatalogNames() error {
+	fmt.Printf("Processing directory names in: %s\n", cp.archiveDir)
+
+	// Process directories
+	changedCount := 0
+	skippedCount := 0
+	processedCount := 0
+
+	entries, err := os.ReadDir(cp.archiveDir)
+	if err != nil {
+		return fmt.Errorf("failed to read directory: %w", err)
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+
+		itemName := entry.Name()
+		oldPath := filepath.Join(cp.archiveDir, itemName)
+
+		if cp.fs.ShouldExclude(oldPath) {
+			fmt.Printf("SKIPPED: %s\n", itemName)
+			skippedCount++
+			continue
+		}
+
+		// Normalize the directory name
+		normalizedName := cp.fixCatalogName(itemName)
+
+		// Only rename if it's different
+		if normalizedName != itemName {
+			newPath := filepath.Join(cp.archiveDir, normalizedName)
+
+			err := os.Rename(oldPath, newPath)
+			if err != nil {
+				fmt.Printf("ERROR renaming '%s': %v\n", itemName, err)
+				continue
+			}
+
+			fmt.Printf("RENAMED: '%s' -> '%s'\n", itemName, normalizedName)
+			changedCount++
+		} else {
+			fmt.Printf("NO CHANGE: %s\n", itemName)
+		}
+		processedCount++
+	}
+
+	fmt.Println("==================================================")
+	fmt.Printf("Summary:\n")
+	fmt.Printf("  Directories processed: %d\n", processedCount)
+	fmt.Printf("  Directories renamed: %d\n", changedCount)
+	fmt.Printf("  Directories skipped: %d\n", skippedCount)
+
+	return nil
+}
+
+// fixCatalogName removes special characters (-_:) and converts to Proper Case
+func (cp *CatalogProcessor) fixCatalogName(name string) string {
+	// Remove special characters (-_:)
+	normalized := regexp.MustCompile(`[-_:]`).ReplaceAllString(name, " ")
+
+	// Convert to Proper Case (first letter of each word capitalized)
+	words := strings.Fields(normalized)
+	var properCaseWords []string
+	for _, word := range words {
+		if len(word) == 0 {
+			continue
+		}
+		// Capitalize first letter, make the rest lowercase
+		capitalized := strings.ToUpper(string(word[0])) + strings.ToLower(word[1:])
+		properCaseWords = append(properCaseWords, capitalized)
+	}
+	return strings.Join(properCaseWords, " ")
 }
