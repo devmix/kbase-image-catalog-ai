@@ -51,6 +51,7 @@ catalogs.
 - **🔄 Auto-Updates**: File system monitoring for automatic catalog refreshes
 - **📊 Comprehensive Metadata**: Structured JSON output with rich information
 - **🛡️ Production Ready**: Docker support, graceful shutdown, and comprehensive logging
+- **🖼️ Image Conversion**: Convert images to WebP format for optimized storage
 
 ### 🎯 Key Features
 
@@ -82,6 +83,12 @@ catalogs.
 - **File System Monitoring** for automatic updates
 - **Memory-Optimized** operations
 - **Graceful Shutdown** with signal handling
+
+#### 🖼️ Image Conversion
+
+- **WebP Conversion** - Automatically convert images to WebP format for optimized storage
+- **Original File Management** - Move original files to separate directory structure
+- **Quality Control** - Configurable compression quality (0-100)
 
 ## 🏗️ Project Architecture
 
@@ -133,6 +140,9 @@ kbase-catalog/
 │       └── watch/              # File monitoring
 │           ├── watch.go        # File system watcher
 │           └── watch_test.go   # Watcher tests
+├── internal/images/            # Image conversion utilities
+│   ├── image_converter.go      # WebP conversion implementation
+│   └── image_converter_test.go # Image converter tests
 ├── web/                        # Web resources
 │   ├── static/                 # Static assets
 │   │   ├── htmx.min.js        # HTMX library
@@ -178,9 +188,9 @@ kbase-catalog/
 
 ### 📊 Project Statistics
 
-- **Total Files**: 65+ files
-- **Go Source Files**: 37 files
-- **Test Files**: 15 files
+- **Total Files**: 67+ files
+- **Go Source Files**: 39 files
+- **Test Files**: 17 files
 - **HTML Templates**: 9 files
 - **Documentation**: 10+ files (including ADRs)
 - **Build Scripts**: 2 files
@@ -285,6 +295,13 @@ supported_extensions:
   - ".webp"
   - ".gif"
   - ".bmp"
+convert_image_extensions:
+  - ".png"
+  - ".tiff"
+  - ".bmp"
+  - ".gif"
+  - ".jpg"
+  - ".jpeg"
 exclude_filter:
   - "*/temp/*"
   - "*/tmp/*"
@@ -304,8 +321,14 @@ retry_delay: 5
 # Process entire catalog
 go run cmd/kbase-catalog/main.go process /path/to/images
 
+# Rebuild root index
+go run cmd/kbase-catalog/main.go rebuild-index
+
 # Test single image
 go run cmd/kbase-catalog/main.go test /path/to/image.jpg
+
+# Convert images to WebP format
+go run cmd/kbase-catalog/main.go convert-images
 
 # Start web interface
 go run cmd/kbase-catalog/main.go web
@@ -372,6 +395,7 @@ go build -o kbase-catalog cmd/kbase-catalog/main.go
 | `max_retries`          | int      | 3                                          | Maximum retry attempts                 |
 | `retry_delay`          | int      | 5                                          | Delay between retries (seconds)        |
 | `supported_extensions` | []string | [.png, .jpg, .jpeg, .webp, .gif, .bmp]     | Supported file formats                 |
+| `convert_image_extensions` | []string | [.png, .tiff, .bmp, .gif, .jpg, .jpeg]  | Image extensions to convert to WebP |
 | `exclude_filter`       | []string | [*/temp/*, */tmp/*, *.tmp, *.bak, **/.git] | Exclude patterns for files/directories |
 
 ## 🧪 Testing and Development

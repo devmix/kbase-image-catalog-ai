@@ -8,15 +8,16 @@ import (
 )
 
 type Config struct {
-	APIURL              string   `yaml:"api_url"`
-	Model               string   `yaml:"model"`
-	Timeout             int      `yaml:"timeout"`
-	SystemPrompt        string   `yaml:"system_prompt"`
-	SupportedExtensions []string `yaml:"supported_extensions"`
-	ExcludeFilter       []string `yaml:"exclude_filter"`
-	ParallelRequests    int      `yaml:"parallel_requests"`
-	MaxRetries          int      `yaml:"max_retries"`
-	RetryDelay          int      `yaml:"retry_delay"`
+	APIURL                 string   `yaml:"api_url"`
+	Model                  string   `yaml:"model"`
+	Timeout                int      `yaml:"timeout"`
+	SystemPrompt           string   `yaml:"system_prompt"`
+	SupportedExtensions    []string `yaml:"supported_extensions"`
+	ConvertImageExtensions []string `yaml:"convert_image_extensions"`
+	ExcludeFilter          []string `yaml:"exclude_filter"`
+	ParallelRequests       int      `yaml:"parallel_requests"`
+	MaxRetries             int      `yaml:"max_retries"`
+	RetryDelay             int      `yaml:"retry_delay"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {
@@ -62,11 +63,12 @@ The JSON must contain two keys:
 
 Example output format:
 {"short_name": "Sunset on the beach", "description": "The image shows a sunset at sea..."}`,
-		SupportedExtensions: []string{".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"},
-		ExcludeFilter:       []string{},
-		ParallelRequests:    3,
-		MaxRetries:          3,
-		RetryDelay:          5,
+		SupportedExtensions:    []string{".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"},
+		ConvertImageExtensions: []string{".png", ".tiff", ".bmp", ".gif", "jpg", "jpeg"},
+		ExcludeFilter:          []string{},
+		ParallelRequests:       3,
+		MaxRetries:             3,
+		RetryDelay:             5,
 	}
 }
 

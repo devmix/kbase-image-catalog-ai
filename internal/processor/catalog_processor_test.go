@@ -160,14 +160,11 @@ func TestCatalogProcessor_ShouldExclude(t *testing.T) {
 func TestCatalogProcessor_RebuildRootIndex(t *testing.T) {
 	t.Run("Should handle empty directory", func(t *testing.T) {
 		config := config.GetDefaultConfig()
-		cp := NewCatalogProcessor(config, "/test/archive")
-
-		// Create a temporary directory for testing
-		tempDir := t.TempDir()
+		cp := NewCatalogProcessor(config, t.TempDir())
 
 		// Test with an empty directory - should not error
 		ctx := context.Background()
-		err := cp.RebuildRootIndex(ctx, tempDir)
+		err := cp.RebuildRootIndex(ctx)
 		assert.NoError(t, err)
 	})
 }

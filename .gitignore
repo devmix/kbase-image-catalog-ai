@@ -2,5 +2,3 @@
 go.sum
 docker-compose.yml
 Dockerfile
-images/
-catalogs/

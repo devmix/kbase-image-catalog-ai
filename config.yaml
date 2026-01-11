@@ -17,6 +17,13 @@ supported_extensions:
   - ".webp"
   - ".gif"
   - ".bmp"
+convert_image_extensions:
+  - ".png"
+  - ".tiff"
+  - ".bmp"
+  - ".gif"
+  - ".jpg"
+  - ".jpeg"
 exclude_filter:
   - "*/temp/*"
   - "*/tmp/*"
