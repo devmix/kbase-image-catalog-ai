@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"kbase-catalog/internal/config"
 )
@@ -31,7 +32,7 @@ func NewDirectoryProcessor(cfg *config.Config, fs *FileScanner, ip *ImageProcess
 }
 
 // ProcessDirectory processes all images in a directory
-func (dp *DirectoryProcessor) ProcessDirectory(ctx context.Context, dirPath string) (bool, error) {
+func (dp *DirectoryProcessor) ProcessDirectory(ctx context.Context, dirPath string) (map[string]interface{}, error) {
 	fmt.Printf("Processing directory: %s\n", dirPath)
 
 	indexJsonPath := filepath.Join(dirPath, "index.json")
@@ -39,16 +40,16 @@ func (dp *DirectoryProcessor) ProcessDirectory(ctx context.Context, dirPath stri
 
 	currentData, err := dp.fs.LoadExistingData(indexJsonPath)
 	if err != nil {
-		return false, fmt.Errorf("failed to load existing data: %w", err)
+		return nil, fmt.Errorf("failed to load existing data: %w", err)
 	}
 
 	imagesToProcess, err := dp.fs.FindImagesToProcess(dirPath)
 	if err != nil {
-		return false, fmt.Errorf("failed to find images: %w", err)
+		return nil, fmt.Errorf("failed to find images: %w", err)
 	}
 
 	if len(imagesToProcess) == 0 && len(currentData) == 0 {
-		return false, nil
+		return nil, nil
 	}
 
 	// Find all files that exist in the directory
@@ -62,7 +63,7 @@ func (dp *DirectoryProcessor) ProcessDirectory(ctx context.Context, dirPath stri
 	}
 
 	// Remove entries from currentData for files that no longer exist
-	newFilesFound := false
+	hasChanges := false
 	for key := range currentData {
 		// Skip index files (they're not images)
 		if key == "index.json" || key == "index.md" {
@@ -72,16 +73,16 @@ func (dp *DirectoryProcessor) ProcessDirectory(ctx context.Context, dirPath stri
 		// If the file doesn't exist anymore, remove it from data
 		if !existingFiles[key] {
 			delete(currentData, key)
-			newFilesFound = true
+			hasChanges = true
 		}
 	}
 
 	// Process new or updated images
 	if len(imagesToProcess) != 0 {
 		if dp.config.ParallelRequests > 1 {
-			newFilesFound, err = dp.processImagesParallel(ctx, imagesToProcess, currentData)
+			hasChanges, err = dp.processImagesParallel(ctx, imagesToProcess, currentData)
 			if err != nil {
-				return false, fmt.Errorf("failed to process images in parallel: %w", err)
+				return nil, fmt.Errorf("failed to process images in parallel: %w", err)
 			}
 		} else {
 			for _, imgPath := range imagesToProcess {
@@ -95,14 +96,14 @@ func (dp *DirectoryProcessor) ProcessDirectory(ctx context.Context, dirPath stri
 					continue
 				}
 				if processed {
-					newFilesFound = true
+					hasChanges = true
 				}
 			}
 		}
 	}
 
 	// Save index files only if we have data to save or if there was a change
-	if newFilesFound || !utils.IsFileExists(indexJsonPath) {
+	if hasChanges || !utils.IsFileExists(indexJsonPath) {
 		// If no images exist in directory, remove the index files
 		if len(currentData) == 0 {
 			// Remove old files if they exist
@@ -112,24 +113,49 @@ func (dp *DirectoryProcessor) ProcessDirectory(ctx context.Context, dirPath stri
 			if utils.IsFileExists(indexMdPath) {
 				os.Remove(indexMdPath)
 			}
-			return newFilesFound, nil
+			return nil, nil
 		}
-
 	}
 
 	if err := dp.saveIndexJson(indexJsonPath, currentData); err != nil {
-		return false, fmt.Errorf("failed to save index.json: %w", err)
+		return nil, fmt.Errorf("failed to save index.json: %w", err)
 	}
 
 	if len(currentData) > 0 {
 		// Only regenerate markdown if there's data and index.json exists
 		err := dp.generateCatalogIndexAsMarkdown(indexMdPath, currentData)
 		if err != nil {
-			return false, fmt.Errorf("failed to generate markdown index: %w", err)
+			return nil, fmt.Errorf("failed to generate markdown index: %w", err)
 		}
 	}
 
-	return newFilesFound, nil
+	catalogData := dp.createCatalogData(currentData)
+
+	return catalogData, nil
+}
+
+func (dp *DirectoryProcessor) createCatalogData(currentData map[string]interface{}) map[string]interface{} {
+	if len(currentData) == 0 {
+		return nil
+	}
+	catalogData := make(map[string]interface{})
+	catalogData["image_count"] = len(currentData)
+	lastUpdate := time.Now()
+	for _, value := range currentData {
+		if meta, ok := value.(map[string]interface{}); !ok {
+			currentDate := meta["update_date"]
+			if currentDate == nil {
+				continue
+			}
+			if imageUpdated, err := time.Parse(time.RFC3339, currentDate.(string)); err == nil {
+				if lastUpdate.Unix() < imageUpdated.Unix() {
+					lastUpdate = imageUpdated
+				}
+			}
+		}
+	}
+	catalogData["last_update"] = lastUpdate.Format(time.RFC3339)
+	return catalogData
 }
 
 // processImagesParallel processes images in parallel

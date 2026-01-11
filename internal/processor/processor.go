@@ -42,6 +42,10 @@ func (cp *CatalogProcessor) ProcessCatalog(ctx context.Context, catalogDir strin
 
 	processedSubdirs := []string{}
 
+	// Keep track of catalogs and their information for global index
+	catalogs := make(map[string]interface{})
+	hasFilter := cp.fs.HasFilter()
+
 	err := filepath.Walk(catalogDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -57,10 +61,14 @@ func (cp *CatalogProcessor) ProcessCatalog(ctx context.Context, catalogDir strin
 			return nil
 		}
 
+		relPath, err := filepath.Rel(catalogDir, path)
+		if err != nil {
+			return fmt.Errorf("Error transforming path to relative: %s: %v\n", path, err)
+		}
+
 		// Skip directories that match exclusion patterns
-		if info.IsDir() && len(cp.config.ExcludeFilter) > 0 {
-			relPath, err := filepath.Rel(catalogDir, path)
-			if err == nil && relPath != "." && cp.fs.ShouldExclude(path) {
+		if info.IsDir() && hasFilter {
+			if err == nil && relPath != "." && cp.fs.ShouldExclude(relPath) {
 				return filepath.SkipDir
 			}
 		}
@@ -68,11 +76,16 @@ func (cp *CatalogProcessor) ProcessCatalog(ctx context.Context, catalogDir strin
 		if info.IsDir() {
 			fmt.Printf("\n--> Processing directory: %s\n", strings.TrimPrefix(path, catalogDir+"/"))
 
-			processed, err := cp.dp.ProcessDirectory(ctx, path)
+			// Process the directory and get whether it was modified
+			data, err := cp.dp.ProcessDirectory(ctx, path)
 			if err != nil {
 				fmt.Printf("Error processing directory %s: %v\n", path, err)
-			} else if processed {
+			} else if data != nil {
 				processedSubdirs = append(processedSubdirs, path)
+			}
+
+			if data != nil {
+				catalogs[relPath] = data
 			}
 		}
 
@@ -85,6 +98,12 @@ func (cp *CatalogProcessor) ProcessCatalog(ctx context.Context, catalogDir strin
 
 	fmt.Printf("\nUpdating root index...\n")
 	cp.ig.GenerateRootIndexAsMarkdown(cp.archiveDir, processedSubdirs)
+
+	fmt.Printf("Generating global catalog index...\n")
+	err = cp.ig.GenerateGlobalIndex(cp.archiveDir, catalogs)
+	if err != nil {
+		return fmt.Errorf("error generating global index: %w", err)
+	}
 	fmt.Printf("Done.\n")
 
 	return nil

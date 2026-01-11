@@ -100,3 +100,20 @@ func (ig *IndexGenerator) GenerateRootIndexAsMarkdown(rootPath string, subdirs [
 		fmt.Printf("Error writing root index.md: %v\n", err)
 	}
 }
+
+// GenerateGlobalIndex creates a global index of all catalogs with their metadata
+func (ig *IndexGenerator) GenerateGlobalIndex(rootPath string, catalogData map[string]interface{}) error {
+	globalIndexPath := filepath.Join(rootPath, "index.json")
+
+	content, err := json.MarshalIndent(catalogData, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal global index JSON: %w", err)
+	}
+
+	err = os.WriteFile(globalIndexPath, content, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write global index.json: %w", err)
+	}
+
+	return nil
+}

@@ -20,7 +20,7 @@ func TestTaskQueue_Integration(t *testing.T) {
 	mockConfig := &config.Config{}
 
 	// Create a real processor for testing
-	realProcessor := &processor.CatalogProcessor{}
+	realProcessor := processor.NewCatalogProcessor(mockConfig, tempDir)
 
 	queue := NewTaskQueue(mockConfig, realProcessor, tempDir)
 
@@ -54,7 +54,7 @@ func TestTaskQueue_MultipleTasks(t *testing.T) {
 	mockConfig := &config.Config{}
 
 	// Create a real processor for testing
-	realProcessor := &processor.CatalogProcessor{}
+	realProcessor := processor.NewCatalogProcessor(mockConfig, tempDir)
 
 	queue := NewTaskQueue(mockConfig, realProcessor, tempDir)
 

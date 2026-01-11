@@ -22,7 +22,7 @@ exclude_filter:
   - "*/tmp/*"
   - "*.tmp"
   - "*.bak"
-  - ".git"
+  - "**/.git"
 parallel_requests: 3
 max_retries: 3
 retry_delay: 5

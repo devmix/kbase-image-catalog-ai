@@ -15,7 +15,7 @@ func TestNewTaskQueue(t *testing.T) {
 	archivePath := "/tmp/test-archive"
 
 	// Create a real processor for testing (we'll test it separately)
-	realProcessor := &processor.CatalogProcessor{}
+	realProcessor := processor.NewCatalogProcessor(mockConfig, archivePath)
 
 	queue := NewTaskQueue(mockConfig, realProcessor, archivePath)
 
@@ -35,7 +35,7 @@ func TestTaskQueue_Start(t *testing.T) {
 	archivePath := "/tmp/test-archive"
 
 	// Create a real processor for testing
-	realProcessor := &processor.CatalogProcessor{}
+	realProcessor := processor.NewCatalogProcessor(mockConfig, archivePath)
 
 	queue := NewTaskQueue(mockConfig, realProcessor, archivePath)
 
@@ -59,7 +59,7 @@ func TestTaskQueue_Stop(t *testing.T) {
 	archivePath := "/tmp/test-archive"
 
 	// Create a real processor for testing
-	realProcessor := &processor.CatalogProcessor{}
+	realProcessor := processor.NewCatalogProcessor(mockConfig, archivePath)
 
 	queue := NewTaskQueue(mockConfig, realProcessor, archivePath)
 
@@ -85,7 +85,7 @@ func TestTaskQueue_AddTask(t *testing.T) {
 	archivePath := "/tmp/test-archive"
 
 	// Create a real processor for testing
-	realProcessor := &processor.CatalogProcessor{}
+	realProcessor := processor.NewCatalogProcessor(mockConfig, archivePath)
 
 	queue := NewTaskQueue(mockConfig, realProcessor, archivePath)
 
@@ -112,7 +112,7 @@ func TestTaskQueue_AddTask_WithFullChannel(t *testing.T) {
 	archivePath := "/tmp/test-archive"
 
 	// Create a real processor for testing
-	realProcessor := &processor.CatalogProcessor{}
+	realProcessor := processor.NewCatalogProcessor(mockConfig, archivePath)
 
 	queue := NewTaskQueue(mockConfig, realProcessor, archivePath)
 

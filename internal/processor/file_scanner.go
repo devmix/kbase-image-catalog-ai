@@ -125,3 +125,7 @@ func (fs *FileScanner) FilterExcludedFiles(files []string) []string {
 	}
 	return result
 }
+
+func (fs *FileScanner) HasFilter() bool {
+	return fs.exclude != nil
+}

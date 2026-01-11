@@ -7,8 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"kbase-catalog/internal/config"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // Test helpers to create test directories and files
@@ -56,7 +57,7 @@ func TestProcessDirectory_NoImagesAndNoExistingData(t *testing.T) {
 	result, err := dp.ProcessDirectory(ctx, tempDir)
 
 	assert.NoError(t, err)
-	assert.False(t, result)
+	assert.Nil(t, result)
 }
 
 func TestProcessDirectory_WithExistingDataButNoNewImages(t *testing.T) {
@@ -89,9 +90,7 @@ func TestProcessDirectory_WithExistingDataButNoNewImages(t *testing.T) {
 	result, err := dp.ProcessDirectory(ctx, tempDir)
 
 	assert.NoError(t, err)
-	// This returns true because we removed an entry from currentData
-	// (since the file doesn't exist in the directory anymore) and set newFilesFound = true
-	assert.True(t, result)
+	assert.Nil(t, result)
 }
 
 func TestNeedsProcessing_NewImage(t *testing.T) {

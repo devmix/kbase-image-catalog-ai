@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"kbase-catalog/internal/utils"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,44 +35,73 @@ func (cs *CatalogService) GetCatalogs(ctx context.Context) ([]map[string]interfa
 		return catalogs, nil
 	}
 
+	// First try to read the global index.json if it exists
+	globalIndexPath := filepath.Join(archiveDir, "index.json")
+	if utils.IsFileExists(globalIndexPath) {
+		data, err := os.ReadFile(globalIndexPath)
+		if err == nil {
+			var globalIndexData map[string]interface{}
+			if err := json.Unmarshal(data, &globalIndexData); err == nil {
+				// Convert the global index data to the format expected by GetCatalogs
+				for catalogName, catalogInfo := range globalIndexData {
+					if catalogInfoMap, ok := catalogInfo.(map[string]interface{}); ok {
+						catalogs = append(catalogs, map[string]interface{}{
+							"name":       catalogName,
+							"imageCount": int(catalogInfoMap["image_count"].(float64)),
+							"lastUpdate": catalogInfoMap["last_update"],
+						})
+					}
+				}
+				return catalogs, nil
+			}
+		}
+	}
+
+	// If global index doesn't exist or has issues, fall back to the old method
+	return cs.getCatalogsFallback(ctx)
+}
+
+// getCatalogsFallback is the original method for backward compatibility
+func (cs *CatalogService) getCatalogsFallback(ctx context.Context) ([]map[string]interface{}, error) {
+	catalogs := []map[string]interface{}{}
+	archiveDir := cs.ArchiveDir
+
+	// If directory doesn't exist, create it and return empty list
+	if _, err := os.Stat(archiveDir); os.IsNotExist(err) {
+		return catalogs, nil
+	}
+
 	// Read all subdirectories in archive
-	err := filepath.Walk(archiveDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Skip the root directory itself
-		if path == archiveDir {
-			return nil
-		}
-
-		// Only process directories (not files)
-		if info.IsDir() {
-			relPath, _ := filepath.Rel(archiveDir, path)
-
-			// Get image count and last update date
-			imageCount, lastUpdate, err := cs.getCatalogInfo(path)
-			if err != nil {
-				// Log error but continue processing other catalogs
-				fmt.Printf("Error getting catalog info for %s: %v\n", relPath, err)
-			}
-
-			if imageCount == 0 {
-				return nil // Skip empty catalogs or those with errors
-			}
-
-			catalogs = append(catalogs, map[string]interface{}{
-				"name":       relPath,
-				"imageCount": imageCount,
-				"lastUpdate": lastUpdate,
-			})
-		}
-
-		return nil
-	})
-
+	entries, err := os.ReadDir(archiveDir)
 	if err != nil {
 		return nil, fmt.Errorf("error reading archive directory: %w", err)
+	}
+
+	for _, entry := range entries {
+		// Skip the root directory itself and non-directories
+		if !entry.IsDir() || entry.Name() == "." || entry.Name() == ".." {
+			continue
+		}
+
+		path := filepath.Join(archiveDir, entry.Name())
+
+		// Get image count and last update date
+		imageCount, lastUpdate, err := cs.getCatalogInfo(path)
+		if err != nil {
+			// Log error but continue processing other catalogs
+			fmt.Printf("Error getting catalog info for %s: %v\n", entry.Name(), err)
+			continue // Continue with other catalogs even if one fails
+		}
+
+		if imageCount == 0 {
+			continue // Skip empty catalogs or those with errors
+		}
+
+		catalogs = append(catalogs, map[string]interface{}{
+			"name":       entry.Name(),
+			"imageCount": imageCount,
+			"lastUpdate": lastUpdate,
+		})
 	}
 
 	return catalogs, nil
