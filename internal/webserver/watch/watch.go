@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"kbase-catalog/internal/web/queue"
+	"kbase-catalog/internal/webserver/queue"
 
 	"github.com/fsnotify/fsnotify"
 )

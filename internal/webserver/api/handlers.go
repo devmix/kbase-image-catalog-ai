@@ -11,9 +11,9 @@ import (
 
 	"kbase-catalog/internal/config"
 	"kbase-catalog/internal/processor"
-	"kbase-catalog/internal/web/queue"
-	"kbase-catalog/internal/web/services"
-	"kbase-catalog/internal/web/watch"
+	"kbase-catalog/internal/webserver/queue"
+	"kbase-catalog/internal/webserver/services"
+	"kbase-catalog/internal/webserver/watch"
 )
 
 // APIHandler represents the API handlers

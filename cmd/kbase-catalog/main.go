@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"kbase-catalog/internal/config"
 	"kbase-catalog/internal/processor"
-	"kbase-catalog/internal/web"
+	"kbase-catalog/internal/webserver"
+	"kbase-catalog/web"
 	"log"
 	"os"
 	"os/signal"
@@ -35,6 +36,7 @@ func main() {
 	// Parse flags for web service
 	webPort := flag.Int("port", 8080, "Port to run the web server on")
 	archiveDir := flag.String("archive-dir", "archive", "Directory to use for archive files (default: 'archive')")
+	useFilesystem := flag.Bool("use-fs", false, "Use real filesystem for static resources instead of embedded")
 
 	flag.Parse()
 
@@ -88,7 +90,9 @@ func main() {
 	case "web":
 		fmt.Println("Starting web interface...")
 
-		server := web.NewServer(cfg, catalogProcessor, *webPort, *archiveDir)
+		web.InitTemplateFS(*useFilesystem)
+
+		server := webserver.NewServer(cfg, catalogProcessor, *webPort, *archiveDir)
 
 		err := server.Start()
 		if err != nil {

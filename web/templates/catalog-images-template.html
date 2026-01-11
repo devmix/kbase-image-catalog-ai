@@ -1,13 +1,15 @@
-{{range .CatalogImages}}
-<div class="image-card">
-    <a href="/archive/{{$.CatalogName}}/{{.filename}}" data-toggle="viewer" data-title="{{if .short_name}}{{.short_name}}{{else}}{{.filename}}{{end}}">
-        <img src="/archive/{{$.CatalogName}}/{{.filename}}"
-             alt="{{if .short_name}}{{.short_name}}{{else}}{{.filename}}{{end}}"
-             style="max-width: 100%; height: auto;"/>
-    </a>
-    <div class="image-info">
-        <div class="image-title">{{if .short_name}}{{.short_name}}{{else}}{{.filename}}{{end}}</div>
-        <div class="image-description">{{.description}}</div>
+{{if .images}}
+<div class="image-grid">
+    {{range .images}}
+    <div class="image-card">
+        <img src="/archive/{{$.catalog}}/{{.filename}}" alt="{{.title}}" style="max-width: 100%; height: auto;" />
+        <div class="image-info">
+            <div class="image-title">{{.title}}</div>
+            <div class="image-description">{{.description}}</div>
+        </div>
     </div>
+    {{end}}
 </div>
+{{else}}
+<p>No images found.</p>
 {{end}}

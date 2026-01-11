@@ -1,13 +1,17 @@
-{{if eq .CatalogList ""}}
-<p>No catalogs found.</p>
-{{else}}
-{{range .CatalogList}}
-<div class="catalog-card">
-    <a href="/catalog/{{.name}}">
-        <h3>{{.name}}</h3>
-        <p>Images: {{.imageCount}}</p>
-        <p>Last update: {{.lastUpdate}}</p>
-    </a>
+{{if .CatalogList}}
+<div class="catalog-grid">
+    {{range .CatalogList}}
+    <div class="catalog-card">
+        <a href="/catalog/{{.name}}">
+            <h3>{{.name}}</h3>
+        </a>
+        <div class="attributes">
+            <span>Images: <b>{{.imageCount}}</b></span>
+            <span>Last update: <b>{{.lastUpdate}}</b></span>
+        </div>
+    </div>
+    {{end}}
 </div>
-{{end}}
+{{else}}
+<p>No catalogs found.</p>
 {{end}}

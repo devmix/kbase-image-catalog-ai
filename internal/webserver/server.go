@@ -1,10 +1,10 @@
-package web
+package webserver
 
 import (
 	"context"
 	"kbase-catalog/internal/config"
 	"kbase-catalog/internal/processor"
-	"kbase-catalog/internal/web/api"
+	"kbase-catalog/internal/webserver/api"
 	"kbase-catalog/web"
 	"log"
 	"net/http"

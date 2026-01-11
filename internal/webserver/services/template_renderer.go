@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"html/template"
 	"kbase-catalog/web"
 	"log"
@@ -61,61 +60,80 @@ func (tr *TemplateRenderer) RenderTemplate(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
-// RenderCatalogList renders the HTML for catalog lists
+// RenderCatalogList renders the HTML for catalog lists using a template
 func (tr *TemplateRenderer) RenderCatalogList(catalogs []map[string]interface{}) template.HTML {
-	var html strings.Builder
-	html.WriteString("<div class=\"catalog-grid\">\n")
+	// Format the data as needed by templates
+	formattedCatalogs := make([]map[string]interface{}, len(catalogs))
+	for i, catalog := range catalogs {
+		data := map[string]interface{}{}
 
-	if len(catalogs) == 0 {
-		html.WriteString("<p>No catalogs found.</p>\n")
-	} else {
-		for _, catalog := range catalogs {
-			name, _ := catalog["name"].(string)
-			imageCount, _ := catalog["imageCount"].(int)
-			lastUpdate, _ := catalog["lastUpdate"].(string)
+		// Copy all fields from original catalog
+		for k, v := range catalog {
+			data[k] = v
+		}
 
-			// Format the last update date nicely if available
-			formattedDate := ""
-			if lastUpdate != "" {
-				if t, err := time.Parse(time.RFC3339, lastUpdate); err == nil {
-					formattedDate = t.Format("2006-01-02")
-				} else {
-					formattedDate = lastUpdate // fallback if parsing fails
-				}
+		// Format the last update date nicely if available
+		if lastUpdate, ok := catalog["lastUpdate"].(string); ok && lastUpdate != "" {
+			if t, err := time.Parse(time.RFC3339, lastUpdate); err == nil {
+				data["lastUpdate"] = t.Format("2006-01-02")
+			} else {
+				data["lastUpdate"] = lastUpdate // fallback if parsing fails
 			}
-
-			html.WriteString(fmt.Sprintf(`<div class="catalog-card"><a href="/catalog/%s"><h3>%s</h3><p>Images: %d</p><p>Last update: %s</p></a></div>`, name, name, imageCount, formattedDate))
 		}
+
+		formattedCatalogs[i] = data
 	}
 
-	html.WriteString("</div>")
+	data := map[string]interface{}{
+		"CatalogList": formattedCatalogs,
+	}
+
+	tmpl, err := template.ParseFS(web.FS, "templates/catalog-list-template.html")
+	if err != nil {
+		log.Printf("Failed to load catalog list template: %v", err)
+		return ""
+	}
+
+	var html strings.Builder
+	err = tmpl.Execute(&html, data)
+	if err != nil {
+		log.Printf("Error executing catalog list template: %v", err)
+		return ""
+	}
+
 	return template.HTML(html.String())
 }
 
-// RenderCatalogNavigation renders navigation links for catalogs
+// RenderCatalogNavigation renders navigation links for catalogs using a template
 func (tr *TemplateRenderer) RenderCatalogNavigation(catalogs []map[string]interface{}, current string) template.HTML {
-	var html strings.Builder
-	html.WriteString("<span>Catalogs: </span>")
+	data := map[string]interface{}{
+		"CatalogNavigation": catalogs,
+		"CurrentCatalog":    current,
+	}
 
-	for _, catalog := range catalogs {
-		name, _ := catalog["name"].(string)
-		if name == current {
-			html.WriteString(fmt.Sprintf(`<strong>%s</strong>`, name))
-		} else {
-			html.WriteString(fmt.Sprintf(`<a href="/catalog/%s">%s</a>`, name, name))
-		}
-		html.WriteString(" | ")
+	tmpl, err := template.ParseFS(web.FS, "templates/catalog-navigation-template.html")
+	if err != nil {
+		log.Printf("Failed to load catalog navigation template: %v", err)
+		return ""
+	}
+
+	var html strings.Builder
+	err = tmpl.Execute(&html, data)
+	if err != nil {
+		log.Printf("Error executing catalog navigation template: %v", err)
+		return ""
 	}
 
 	return template.HTML(html.String())
 }
 
-// RenderCatalogImages renders HTML for catalog images
+// RenderCatalogImages renders HTML for catalog images using a template
 func (tr *TemplateRenderer) RenderCatalogImages(catalogImages []map[string]interface{}, catalogName string) template.HTML {
-	var html strings.Builder
-	html.WriteString("<div class=\"image-grid\">\n")
+	// Format the data as needed by templates
+	formattedImages := make([]map[string]interface{}, len(catalogImages))
+	for i, imageData := range catalogImages {
+		data := map[string]interface{}{}
 
-	for _, imageData := range catalogImages {
 		if filename, ok := imageData["filename"].(string); ok {
 			shortName := filename
 			description := ""
@@ -128,22 +146,30 @@ func (tr *TemplateRenderer) RenderCatalogImages(catalogImages []map[string]inter
 				description = desc
 			}
 
-			html.WriteString(fmt.Sprintf(`
-<div class="image-card">
-    <img src="/archive/%s/%s" alt="%s" style="max-width: 100%%; height: auto;" />
-    <div class="image-info">
-        <div class="image-title">%s</div>
-        <div class="image-description">%s</div>
-    </div>
-</div>`,
-				catalogName,
-				filename,
-				shortName,
-				shortName,
-				description))
+			data["filename"] = filename
+			data["title"] = shortName
+			data["description"] = description
 		}
+		formattedImages[i] = data
 	}
 
-	html.WriteString("</div>")
+	data := map[string]interface{}{
+		"catalog": catalogName,
+		"images":  formattedImages,
+	}
+
+	tmpl, err := template.ParseFS(web.FS, "templates/catalog-images-template.html")
+	if err != nil {
+		log.Printf("Failed to load catalog images template: %v", err)
+		return ""
+	}
+
+	var html strings.Builder
+	err = tmpl.Execute(&html, data)
+	if err != nil {
+		log.Printf("Error executing catalog images template: %v", err)
+		return ""
+	}
+
 	return template.HTML(html.String())
 }

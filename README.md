@@ -180,7 +180,7 @@ kbase-catalog/
 
 - **Total Files**: 65+ files
 - **Go Source Files**: 37 files
-- **Test Files**: 15 files  
+- **Test Files**: 15 files
 - **HTML Templates**: 9 files
 - **Documentation**: 10+ files (including ADRs)
 - **Build Scripts**: 2 files
@@ -215,9 +215,9 @@ The application follows a clean architecture pattern with clear separation of co
 
 ```go
 require (
-    github.com/fsnotify/fsnotify v1.9.0     // File system monitoring
-    golang.org/x/image v0.34.0             // Image processing
-    gopkg.in/yaml.v2 v2.4.0               // YAML configuration parsing
+github.com/fsnotify/fsnotify v1.9.0 // File system monitoring
+golang.org/x/image v0.34.0 // Image processing
+gopkg.in/yaml.v2 v2.4.0 // YAML configuration parsing
 )
 ```
 
@@ -285,6 +285,12 @@ supported_extensions:
   - ".webp"
   - ".gif"
   - ".bmp"
+exclude_filter:
+  - "*/temp/*"
+  - "*/tmp/*"
+  - "*.tmp"
+  - "*.bak"
+  - "**/.git"
 parallel_requests: 3
 max_retries: 3
 retry_delay: 5
@@ -306,6 +312,9 @@ go run cmd/kbase-catalog/main.go web
 
 # Start web interface with custom parameters
 go run cmd/kbase-catalog/main.go -archive-dir /path/to/custom/archive -port 8080 web
+
+# Start web interface with real filesystem templates
+go run cmd/kbase-catalog/main.go -archive-dir /path/to/custom/archive -use-fs web
 
 # Show version
 go run cmd/kbase-catalog/main.go version
@@ -354,15 +363,16 @@ go build -o kbase-catalog cmd/kbase-catalog/main.go
 
 ### Configuration Parameters
 
-| Parameter              | Type     | Default                                | Description                     |
-|------------------------|----------|----------------------------------------|---------------------------------|
-| `api_url`              | string   | -                                      | AI API endpoint URL             |
-| `model`                | string   | -                                      | Model name for analysis         |
-| `timeout`              | int      | 60                                     | Request timeout in seconds      |
-| `parallel_requests`    | int      | 3                                      | Number of parallel requests     |
-| `max_retries`          | int      | 3                                      | Maximum retry attempts          |
-| `retry_delay`          | int      | 5                                      | Delay between retries (seconds) |
-| `supported_extensions` | []string | [.png, .jpg, .jpeg, .webp, .gif, .bmp] | Supported file formats          |
+| Parameter              | Type     | Default                                    | Description                            |
+|------------------------|----------|--------------------------------------------|----------------------------------------|
+| `api_url`              | string   | -                                          | AI API endpoint URL                    |
+| `model`                | string   | -                                          | Model name for analysis                |
+| `timeout`              | int      | 60                                         | Request timeout in seconds             |
+| `parallel_requests`    | int      | 3                                          | Number of parallel requests            |
+| `max_retries`          | int      | 3                                          | Maximum retry attempts                 |
+| `retry_delay`          | int      | 5                                          | Delay between retries (seconds)        |
+| `supported_extensions` | []string | [.png, .jpg, .jpeg, .webp, .gif, .bmp]     | Supported file formats                 |
+| `exclude_filter`       | []string | [*/temp/*, */tmp/*, *.tmp, *.bak, **/.git] | Exclude patterns for files/directories |
 
 ## 🧪 Testing and Development
 
